@@ -1,0 +1,71 @@
+﻿#include <iostream>
+#include <string>
+
+struct Ht_item {
+    std::string key;
+    std::string value;
+};
+
+class HashTable {
+private:
+    static const int CAPACITY = 128; 
+    Ht_item* items[CAPACITY];
+    int count;
+
+public:
+    HashTable() {
+        for (int i = 0; i < CAPACITY; ++i) {
+            items[i] = nullptr;
+        }
+        count = 0;
+    }
+
+    unsigned long modular_hash(const std::string& key) {
+        unsigned long hash_value = 0;
+        for (char ch : key) {
+            hash_value = (hash_value * 31 + ch) % CAPACITY;
+        }
+        return hash_value;
+    }
+
+    unsigned long multiplicative_hash(const std::string& key) {
+        unsigned long hash_value = 0;
+        const double A = 0.6180339887; 
+        for (char ch : key) {
+            hash_value += ch;
+            hash_value *= A;
+        }
+        return static_cast<unsigned long>(CAPACITY * (hash_value - static_cast<unsigned long>(hash_value)));
+    }
+
+    void insert(const std::string& key, const std::string& value) {
+        unsigned long index = modular_hash(key); 
+        while (items[index] != nullptr) {
+            index = (index + 1) % CAPACITY; 
+        }
+        items[index] = new Ht_item{ key, value };
+        ++count;
+    }
+
+    std::string search(const std::string& key) {
+        unsigned long index = modular_hash(key); 
+        while (items[index] != nullptr) {
+            if (items[index]->key == key) {
+                return items[index]->value;
+            }
+            index = (index + 1) % CAPACITY; 
+        }
+        return "Not found";
+    }
+};
+
+int main() {
+    setlocale(LC_ALL, "rus");
+    HashTable ht;
+    ht.insert("яблоко", "фрукт");
+    ht.insert("банан", "фрукт");
+    ht.insert("морковка", "овощь");
+
+    std::cout << "банан - это " << ht.search("банан") << std::endl;
+    std::cout << "виноград - это " << ht.search("виноград") << std::endl;
+}
